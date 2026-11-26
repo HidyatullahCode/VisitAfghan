@@ -401,13 +401,50 @@ function Blog() {
   );
 }
 
+
+
 // CONTACT PAGE
 function Contact() {
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    setSubmitted(true);
+
+    setIsSubmitting(true);
+    setSubmitted(false);
+    setError("");
+
+    const formData = new FormData(event.target);
+
+    formData.append(
+      "access_key",
+      "757d7ba2-9125-446d-843e-60c32a279895"
+    );
+
+    try {
+      const response = await fetch(
+        "https://api.web3forms.com/submit",
+        {
+          method: "POST",
+          body: formData
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSubmitted(true);
+        event.target.reset();
+      } else {
+        setError("Message could not be sent. Please try again.");
+      }
+    } catch (err) {
+      setError("Something went wrong. Please check your internet connection.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -418,28 +455,58 @@ function Contact() {
     >
       <form className="contact-form" onSubmit={handleSubmit}>
         <label>Your Name</label>
-        <input type="text" placeholder="Enter your name" required />
+        <input
+          type="text"
+          name="name"
+          placeholder="Enter your name"
+          required
+        />
 
         <label>Email Address</label>
-        <input type="email" placeholder="Enter your email" required />
+        <input
+          type="email"
+          name="email"
+          placeholder="Enter your email"
+          required
+        />
 
         <label>Your Message</label>
-        <textarea placeholder="Write your message..." rows="6" required />
+        <textarea
+          name="message"
+          placeholder="Write your message..."
+          rows="6"
+          required
+        />
 
-        <button type="submit" className="primary-button">
-          Send Message <Send size={17} />
+        <button
+          type="submit"
+          className="primary-button"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Sending..." : "Send Message"}
+          {!isSubmitting && <Send size={17} />}
         </button>
 
         {submitted && (
-          <p className="success-message">
-            Thank you! This demo form is working, but it is not connected
-            to an email service yet.
+          <p className="success-message" role="status">
+            Thank you! Your message has been sent successfully.
+          </p>
+        )}
+
+        {error && (
+          <p role="alert" style={{ color: "red", marginTop: "15px" }}>
+            {error}
           </p>
         )}
       </form>
     </PageLayout>
   );
 }
+
+
+
+
+
 
 // REUSABLE PAGE LAYOUT
 function PageLayout({ label, title, description, children }) {
