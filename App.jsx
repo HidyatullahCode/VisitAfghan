@@ -404,49 +404,36 @@ function Blog() {
 
 
 // CONTACT PAGE
-function Contact() {
-  const [submitted, setSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
 
-  async function handleSubmit(event) {
+
+function Contact() {
+  const [emailStatus, setEmailStatus] = useState("");
+
+  function handleSubmit(event) {
     event.preventDefault();
 
-    setIsSubmitting(true);
-    setSubmitted(false);
-    setError("");
+    const form = event.target;
 
-    const formData = new FormData(event.target);
+    const name = form.name.value;
+    const email = form.email.value;
+    const message = form.message.value;
 
-    // formData.append(
-    //   "access_key",
-    //   "0d761ada-5d5f-4e63-b3c2-620e9bf29682"
-    //  "757d7ba2-9125-446d-843e-60c32a279895"
-      formData.append("replyto", "hidyatullah602@gmail.com");
+    const subject = encodeURIComponent(
+      `New VisitAfghan Message from ${name}`
     );
 
-    try {
-      const response = await fetch(
-        "https://api.web3forms.com/submit",
-        {
-          method: "POST",
-          body: formData
-        }
-      );
+    const body = encodeURIComponent(
+      `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`
+    );
 
-      const result = await response.json();
+    const mailtoLink =
+      `mailto:hidyatullah602@gmail.com?subject=${subject}&body=${body}`;
 
-      if (result.success) {
-        setSubmitted(true);
-        event.target.reset();
-      } else {
-        setError("Message could not be sent. Please try again.");
-      }
-    } catch (err) {
-      setError("Something went wrong. Please check your internet connection.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    window.location.href = mailtoLink;
+
+    setEmailStatus(
+      "Your email application is opening. Please press Send to deliver your message."
+    );
   }
 
   return (
@@ -480,24 +467,14 @@ function Contact() {
           required
         />
 
-        <button
-          type="submit"
-          className="primary-button"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Sending..." : "Send Message"}
-          {!isSubmitting && <Send size={17} />}
+        <button type="submit" className="primary-button">
+          Send Message
+          <Send size={17} />
         </button>
 
-        {submitted && (
+        {emailStatus && (
           <p className="success-message" role="status">
-            Thank you! Your message has been sent successfully.
-          </p>
-        )}
-
-        {error && (
-          <p role="alert" style={{ color: "red", marginTop: "15px" }}>
-            {error}
+            {emailStatus}
           </p>
         )}
       </form>
